@@ -1,17 +1,19 @@
 #coding: utf-8
-
 from uuid import uuid4
 
 from flask import Flask, render_template, request, send_from_directory
 from flask_uploads import UploadSet, configure_uploads, IMAGES
+#from flask_reuploaded import UploadSet, configure_uploads, IMAGES
 
 from keras.models import load_model
 from keras.preprocessing.image import array_to_img, img_to_array, load_img
-from scipy.misc import imresize
+#from scipy.misc import imresize
+#from scipy.misc import cv2 as imresize
+#import scipy.cv2
+from PIL import Image
 import numpy as np
 import cv2
-
-from gevent.wsgi import WSGIServer
+from gevent.pywsgi import WSGIServer
 
 app = Flask(__name__)
 
