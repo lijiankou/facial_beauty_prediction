@@ -65,10 +65,8 @@ def GetData(num, input_shape, label_df):
         if i > num:
             break
         img = load_img(os.path.join(sample_dir, fn))
-        logger.info(os.path.join(sample_dir, fn))
         x = img_to_array(img).reshape(img_height, img_width, channels)
         x = x.astype('float32') / 255.
-        logger.info(x[:2])
         y = label_df[label_df.Filename == fn].score.values
         y = y.astype('float32')
         feat[i] = x
