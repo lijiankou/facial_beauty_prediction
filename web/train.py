@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.applications import ResNet50
 from tensorflow.keras.layers import Dense
@@ -85,21 +86,21 @@ def GetModel(input_shape):
     model = Sequential()
     model.add(resnet)
     model.add(Dense(1))
-    model.layers[0].trainable = False
+    #model.layers[0].trainable = False
+    model.layers[0].trainable = True
     model.compile(loss='mse', optimizer='adam')
     return model
 
 if __name__ == '__main__':
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
     logger = log.GetLogger(log.logging.INFO)
     img_width, img_height, channels = 350, 350, 3
     input_shape = (img_width, img_height, channels)
     num = 10000000
-    label_df = GetLabel(num)
-    label_df.head(1)
-    print(label_df)
-    x_train,x_val,x_test,y_train,y_val,y_test = GetData(num, input_shape,label_df)
-    #logger.info(x_train)
-    #logger.info(y_train)
-    model = GetModel(input_shape)
-    model.fit(batch_size=32, x=x_train, y=y_train, epochs=30)
-    #model.fit(batch_size=128, x=x_train, y=y_train, epochs=10)
+    with tf.device('/gpu:0'):
+        label_df = GetLabel(num)
+        label_df.head(1)
+        x_train,x_val,x_test,y_train,y_val,y_test = GetData(num, input_shape,label_df)
+        model = GetModel(input_shape)
+        model.fit(batch_size=16, x=x_train, y=y_train, epochs=2)
+        model.save("beauty_model")
