@@ -1,12 +1,13 @@
+import os
+import numpy as np
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.applications import ResNet50
 from tensorflow.keras.layers import Dense
-import os
-import numpy as np
-from keras.preprocessing.image import load_img
+from tensorflow.keras.preprocessing.image import load_img
 from sklearn.model_selection import train_test_split
 import pandas as pd
 import log
+
 def img_to_array(img, data_format='channels_last', dtype='float32'):
     """Converts a PIL Image instance to a Numpy array.
     # Arguments
@@ -37,10 +38,10 @@ def img_to_array(img, data_format='channels_last', dtype='float32'):
         raise ValueError('Unsupported image shape: %s' % (x.shape,))
     return x
 
-
-
 def GetLabel(num):
+    logger.info("beg read excel")
     ratings = pd.read_excel('data/SCUT-FBP5500/All_Ratings.xlsx')
+    logger.info("end read excel")
     filenames = ratings.groupby('Filename').size().index.tolist()
     labels = []
     for index,filename in enumerate(filenames):
@@ -63,9 +64,11 @@ def GetData(num, input_shape, label_df):
     for i, fn in enumerate(os.listdir(sample_dir)):
         if i > num:
             break
-        img = load_img('%s/%s' % (sample_dir, fn))
+        img = load_img(os.path.join(sample_dir, fn))
+        logger.info(os.path.join(sample_dir, fn))
         x = img_to_array(img).reshape(img_height, img_width, channels)
         x = x.astype('float32') / 255.
+        logger.info(x[:2])
         y = label_df[label_df.Filename == fn].score.values
         y = y.astype('float32')
         feat[i] = x
@@ -90,15 +93,15 @@ def GetModel(input_shape):
 
 if __name__ == '__main__':
     logger = log.GetLogger(log.logging.INFO)
-    logger.warn('hello world')
     img_width, img_height, channels = 350, 350, 3
     input_shape = (img_width, img_height, channels)
-    num = 100
+    num = 10000000
     label_df = GetLabel(num)
+    label_df.head(1)
     print(label_df)
     x_train,x_val,x_test,y_train,y_val,y_test = GetData(num, input_shape,label_df)
-    logger.info(x_train)
-    logger.info(y_train)
+    #logger.info(x_train)
+    #logger.info(y_train)
     model = GetModel(input_shape)
-    #model.fit(batch_size=32, x=x_train, y=y_train, epochs=30)
-    model.fit(batch_size=128, x=x_train, y=y_train, epochs=10)
+    model.fit(batch_size=32, x=x_train, y=y_train, epochs=30)
+    #model.fit(batch_size=128, x=x_train, y=y_train, epochs=10)
